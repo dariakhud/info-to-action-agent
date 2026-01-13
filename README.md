@@ -1,4 +1,4 @@
-# Info-to-Action: Calendar-Integrated Agent
+# Information-to-Action Calendar-Integrated Agent
 
 This agent summarizes articles or YouTube videos into key points, extracts actionable tasks, and schedules them on your Google Calendar.
 
