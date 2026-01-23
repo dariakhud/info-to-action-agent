@@ -1,5 +1,6 @@
 import os
 import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 
 from google.auth.transport.requests import Request
@@ -154,13 +155,13 @@ def ask_user(actions: list[str]) -> list[tuple[str, datetime.datetime]]:
 def get_calendar_service():
     """Gets authenticated Google Calendar service."""
     # Build paths relative to the script's location
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    token_path = os.path.join(base_dir, 'token.json')
-    creds_path = os.path.join(base_dir, 'credentials.json')
+    base_dir = Path(__file__).parent.parent
+    token_path = base_dir / 'token.json'
+    creds_path = base_dir / 'credentials.json'
 
     creds = None
     if os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -168,7 +169,7 @@ def get_calendar_service():
             if not os.path.exists(creds_path):
                 raise FileNotFoundError(f"Could not find credentials.json at {creds_path}. Please ensure it is present.")
             flow = InstalledAppFlow.from_client_secrets_file(
-                creds_path, SCOPES)
+                str(creds_path), SCOPES)
             creds = flow.run_local_server(port=8080)
         with open(token_path, 'w') as token:
             token.write(creds.to_json())
