@@ -1,14 +1,8 @@
-import typer
-
+from src.core.log import configure_logging
 from src.app.typer import app
-# from tests.live.commands import app as tests_live_app
 
-
-# app = typer.Typer()
-
-
-# app.add_typer(tests_live_app)
-
+# Configure logging on startup
+configure_logging()
 
 if __name__ == "__main__":
     app()

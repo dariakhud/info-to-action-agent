@@ -1,4 +1,5 @@
 """CLI presentation layer for agent commands as Typer app."""
+import logging
 import datetime
 import typer
 from typing import Optional, List, Tuple
@@ -14,6 +15,7 @@ from src.modules.agent.dto import ContentDTO, SummaryDTO, ScheduledEventDTO
 
 # Global console instance for rich output
 console = Console()
+logger = logging.getLogger(__name__)
 
 # Create typer app for agent commands
 app = typer.Typer(help="Agent commands for information-to-action workflow")
@@ -76,6 +78,7 @@ def run_agent_command(
             f"[green]✓ Extracted {len(content.text)} characters from {content.source_type}[/green]"
         )
     except ValueError as e:
+        logger.error(f"Content fetch failed: {e}", exc_info=True)
         console.print(f"[red]✗ Error:[/red] {e}")
         return
     
@@ -91,6 +94,7 @@ def run_agent_command(
         console.print(Markdown(summary.points))
         console.print()
     except Exception as e:
+        logger.error(f"Summarization failed: {e}", exc_info=True)
         console.print(f"[red]✗ Error:[/red] Failed to summarize: {e}")
         return
     
@@ -114,6 +118,7 @@ def run_agent_command(
         console.print(table)
         console.print()
     except Exception as e:
+        logger.error(f"Action extraction failed: {e}", exc_info=True)
         console.print(f"[red]✗ Error:[/red] Failed to extract actions: {e}")
         return
     
@@ -168,6 +173,7 @@ def run_agent_command(
                 else:
                     console.print(f"[green]✓ Event created for {event.start_time.strftime('%Y-%m-%d %H:%M')}[/green]")
             except Exception as e:
+                logger.error(f"Failed to schedule action '{action}': {e}", exc_info=True)
                 console.print(f"[red]✗ Error:[/red] Failed to schedule action: {e}")
     else:
         console.print("[yellow]No actions scheduled.[/yellow]")

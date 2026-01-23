@@ -1,4 +1,5 @@
 """Service for content fetching and processing."""
+import logging
 from typing import Optional
 from src.infra.client.content_fetcher import (
     is_url,
@@ -7,6 +8,8 @@ from src.infra.client.content_fetcher import (
     fetch_video_transcript
 )
 from src.modules.agent.dto import ContentDTO
+
+logger = logging.getLogger(__name__)
 
 
 class ContentService:
@@ -30,20 +33,26 @@ class ContentService:
         if url:
             if is_youtube_url(url):
                 try:
+                    logger.debug(f"Fetching YouTube transcript from: {url}")
                     content_text = fetch_video_transcript(url)
                     source_type = "video transcript"
                 except Exception as e:
+                    logger.error(f"Failed to fetch video transcript from {url}: {e}", exc_info=True)
                     raise ValueError(f"Failed to fetch video transcript: {e}")
             elif is_url(url):
                 try:
+                    logger.debug(f"Fetching article from: {url}")
                     content_text = fetch_article_text(url)
                     source_type = "article"
                 except Exception as e:
+                    logger.error(f"Failed to fetch article from {url}: {e}", exc_info=True)
                     raise ValueError(f"Failed to fetch article: {e}")
             else:
+                logger.warning(f"Invalid URL format: {url}")
                 raise ValueError("Invalid URL format")
             
             if not content_text:
+                logger.warning(f"Empty content extracted from {source_type}: {url}")
                 raise ValueError(f"Could not extract text from {source_type}")
             
             return ContentDTO(

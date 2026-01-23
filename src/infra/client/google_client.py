@@ -1,4 +1,5 @@
 """Google API clients (GenAI and Calendar)."""
+import logging
 import os
 from pathlib import Path
 from google.auth.transport.requests import Request
@@ -7,6 +8,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from google import genai
 from src.core.settings import settings
+
+logger = logging.getLogger(__name__)
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
@@ -29,26 +32,34 @@ def get_calendar_service():
     creds = None
     if os.path.exists(token_path):
         try:
+            logger.debug("Loading existing token from file")
             creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
         except ValueError as e:
             # If token is corrupted or missing refresh_token, delete it
             if "missing fields" in str(e).lower() or "refresh_token" in str(e).lower():
+                logger.warning("Invalid token file detected, deleting and requesting new authorization")
                 token_path.unlink()  # Delete invalid token
                 creds = None
             else:
+                logger.error(f"Error loading token: {e}", exc_info=True)
                 raise
     
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
+            logger.info("Refreshing expired token")
             creds.refresh(Request())
+            logger.info("Token refreshed successfully")
         else:
             if not os.path.exists(creds_path):
+                logger.error(f"credentials.json not found at {creds_path}")
                 raise FileNotFoundError(
                     f"Could not find credentials.json at {creds_path}. "
                     "Please ensure it is present."
                 )
+            logger.info("Starting OAuth flow for calendar access")
             flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
             creds = flow.run_local_server(port=8080)
+            logger.info("OAuth authorization completed")
             
             # Check if we got refresh_token, if not, we need to force re-consent
             if not creds.refresh_token:
@@ -87,6 +98,10 @@ def get_calendar_service():
         if creds.refresh_token:
             with open(token_path, 'w') as token:
                 token.write(creds.to_json())
+            logger.info("Token saved successfully")
         else:
+            logger.error("Cannot save token without refresh_token")
             raise ValueError("Cannot save token without refresh_token")
+    
+    logger.debug("Calendar service initialized")
     return build('calendar', 'v3', credentials=creds)
