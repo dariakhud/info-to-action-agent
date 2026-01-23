@@ -20,5 +20,8 @@ help: ##:: Show this help
 	echo ""; \
 	printf "$${RESET}"
 
+ping: ##:: Ping
+	uv run cli.py ping
+
 up: ##:: Run agent
-	uv run main.py
+	uv run cli.py run

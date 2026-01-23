@@ -12,6 +12,7 @@ token.json
 credentials.json
 client_secret_*.json
 oauth_client_*.json
+storage/tokens/*.json
 
 # IDEs
 .vscode/
@@ -20,3 +21,12 @@ oauth_client_*.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Storage
+storage/*
+!storage/.gitkeep
+
