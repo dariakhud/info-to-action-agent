@@ -33,27 +33,14 @@ This agent summarizes articles or YouTube videos into key points, extracts actio
 
 ## Setup Instructions
 
-### 1. Install uv
-
-If you don't have `uv` installed:
-
-**Windows (PowerShell):**
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-**macOS/Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-### 2. Gemini API Key
+### 1. Gemini API Key
 
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey).
 2. Create a new API key.
 3. In this project, create a `.env` file:
    ```bash
    GOOGLE_API_KEY=your_key_here
+   LOG_LEVEL=INFO  # Optional: DEBUG, INFO, WARNING, ERROR, CRITICAL
    ```
 
 ### 3. Google Calendar API (OAuth)
@@ -72,6 +59,10 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
    - Select **Application type**: **Desktop app**.
    - Click **Create** and download the JSON file.
 6. **Rename and Move**: Move the downloaded JSON into this project folder and rename it exactly to `credentials.json`.
+
+### 4. Install uv
+
+Install [uv](https://github.com/astral-sh/uv) if you don't have it yet.
 
 ## Installation
 
@@ -125,6 +116,19 @@ uv run cli.py ping
 uv run cli.py --help
 ```
 
+## Testing
+
+Run unit tests:
+```bash
+make test
+```
+
+Tests are in `tests/unit/` covering utilities, DTOs, and services.
+
+## Logging
+
+Logs are saved to `logs/logs.log` (rotated at 3MB, 10 backups). Set `LOG_LEVEL` in `.env` (default: `INFO`). Logs don't interfere with CLI output.
+
 ## How It Works
 
 1. **Input**: Provide a URL (article or YouTube video) or direct text
@@ -138,13 +142,19 @@ uv run cli.py --help
 
 ```
 src/
-├── infra/client/          # External service clients (Google, HTTP, YouTube)
-├── modules/agent/          # Agent business logic
-│   ├── service/           # Business logic services
-│   ├── dto.py             # Data transfer objects
-│   └── commands.py        # CLI presentation layer
-└── app/                   # Application entry points
-    └── typer.py           # Typer CLI commands
+├── core/
+├── infra/
+│   └── client/
+├── modules/
+│   └── agent/
+│       └── service/
+└── app/
+
+tests/
+└── unit/
+
+storage/                   # OAuth tokens and other storage
+logs/                      # Application logs (auto-rotated)
 ```
 
 ## Notes

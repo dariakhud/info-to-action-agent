@@ -25,3 +25,6 @@ ping: ##:: Ping
 
 up: ##:: Run agent
 	uv run cli.py run
+
+test: ##:: Run tests
+	uv run pytest tests/unit -v
